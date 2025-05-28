@@ -85,8 +85,31 @@ onMounted(() => {
 
   // 👉 Tính center từ layoutData
   const scaleFactor = 0.1
+
+  
+  // Tạo label cho dãy
+  const createLabel = (text, position) => {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    canvas.width = 256
+    canvas.height = 128
+
+    context.font = 'Bold 64px Arial'
+    context.fillStyle = 'black'
+    context.fillText(text, 10, 80)
+
+    const texture = new THREE.CanvasTexture(canvas)
+    const material = new THREE.SpriteMaterial({ map: texture, transparent: true })
+    const sprite = new THREE.Sprite(material)
+    sprite.scale.set(20, 10, 1)
+    sprite.position.copy(position.clone().add(new THREE.Vector3(0, 15, 0)))
+
+    scene.add(sprite)
+  }
+
   let totalX = 0, totalY = 0, totalZ = 0
   layoutData.forEach(loc => {
+    const locationId = loc.LOCATION
     totalX += parseFloat(loc.X) * scaleFactor
     totalY += parseFloat(loc.Z || 0) * scaleFactor
     totalZ += parseFloat(loc.Y) * scaleFactor
@@ -96,6 +119,8 @@ onMounted(() => {
   const centerY = totalY / layoutData.length
   const centerZ = totalZ / layoutData.length
   const center = new THREE.Vector3(centerX, centerY, centerZ)
+
+  
 
   // 👁️ Camera
   const camera = new THREE.PerspectiveCamera( 75, (window.innerWidth * 0.7) / window.innerHeight, 0.1, 2000)
@@ -111,6 +136,7 @@ onMounted(() => {
 
   const controls = new OrbitControls(camera, renderer.domElement)
   controls.enableDamping = true
+  controls.target.set(centerX, centerY, centerZ)
   controls.dampingFactor = 0.05
 
   // Lights
@@ -121,6 +147,7 @@ onMounted(() => {
 
 const axesHelper = new THREE.AxesHelper(50)
 axesHelper.position.set(centerX, centerY, centerZ)
+axesHelper.visible = false
 scene.add(axesHelper)
 
 const gridHelper = new THREE.GridHelper(400, 100, 0x888888, 0xcccccc);
